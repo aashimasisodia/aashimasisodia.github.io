@@ -786,7 +786,6 @@
             history.push(cmd);
             historyIndex = history.length;
             if (commands[cmd]) { commands[cmd](); }
-            scrollBottom();
             input.focus();
         }
 
@@ -815,10 +814,16 @@
             heroSection.appendChild(infoContainer);
             output.appendChild(heroSection);
 
+            const captionDiv = document.createElement('div');
+            captionDiv.className = 'line-dim fade-in';
+            captionDiv.style.cssText = 'font-size:10px;margin-top:4px;white-space:nowrap;';
+            captionDiv.textContent = '^btw, this is a photo of mine generated to ansii -- highlight it :p';
+            output.appendChild(captionDiv);
+
             fetch('ansi_html.txt')
                 .then(r => r.text())
                 .then(html => {
-                    photoContainer.innerHTML = html + '<div class="line-dim" style="font-size:10px;margin-top:4px;white-space:nowrap;">^btw, this is art generated to ansii -- highlight it :p</div>';
+                    photoContainer.innerHTML = html;
                     scrollBottom();
                 })
                 .catch(() => { });
@@ -853,8 +858,13 @@
 
         const inputHints = document.getElementById('input-hints');
 
+        input.addEventListener('click', function () {
+            scrollBottom();
+        });
+
         input.addEventListener('input', function () {
             inputHints.classList.toggle('hidden', input.value.length > 0);
+            scrollBottom();
         });
 
         input.addEventListener('keydown', function (e) {
@@ -896,7 +906,13 @@
             }
         });
 
-        terminal.addEventListener('click', () => input.focus());
+        terminal.addEventListener('click', (e) => {
+            // Only focus, don't scroll unless clicking on the input itself
+            if (e.target !== input) {
+                e.preventDefault();
+                input.focus({ preventScroll: true });
+            }
+        });
 
         let contactFlow = null;
         const contactSteps = [
