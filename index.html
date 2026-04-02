@@ -13,8 +13,8 @@
             --bg: #0a0a0f;
             --bg-panel: #0e0e16;
             --border: #1a1a2e;
-            --text: #c0c0d0;
-            --text-dim: #555570;
+            --text: #ffffff;
+            --text-dim: #ffffff;
             --text-bright: #e8e8f0;
             --green: #00ff88;
             --green-dim: #00cc6a;
@@ -48,7 +48,6 @@
             overflow-x: hidden;
         }
 
-        /* Scanline overlay */
         body::before {
             content: '';
             position: fixed;
@@ -57,15 +56,12 @@
             right: 0;
             bottom: 0;
             background: repeating-linear-gradient(0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(0, 0, 0, 0.03) 2px,
-                    rgba(0, 0, 0, 0.03) 4px);
+                    transparent, transparent 2px,
+                    rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
             pointer-events: none;
             z-index: 9999;
         }
 
-        /* CRT vignette */
         body::after {
             content: '';
             position: fixed;
@@ -85,67 +81,23 @@
             min-height: 100vh;
         }
 
-        /* Title bar */
-        .title-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 16px;
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-bottom: none;
-            border-radius: 10px 10px 0 0;
-            margin-top: 20px;
-        }
 
-        .title-bar-dots {
-            display: flex;
-            gap: 7px;
-        }
 
-        .title-bar-dots span {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .title-bar-dots span:nth-child(1) {
-            background: #ff5f57;
-        }
-
-        .title-bar-dots span:nth-child(2) {
-            background: #febc2e;
-        }
-
-        .title-bar-dots span:nth-child(3) {
-            background: #28c840;
-        }
-
-        .title-bar-text {
-            flex: 1;
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 12px;
-            letter-spacing: 1px;
-        }
-
-        /* Main terminal body */
         .terminal-body {
             background: var(--bg-panel);
             border: 1px solid var(--border);
-            border-radius: 0 0 10px 10px;
+            border-radius: 10px;
             padding: 30px;
             min-height: 600px;
             position: relative;
+            margin-top: 20px;
         }
 
-        /* Output area */
         #output {
             white-space: pre-wrap;
             word-wrap: break-word;
         }
 
-        /* Prompt line */
         .prompt-line {
             display: flex;
             align-items: center;
@@ -197,7 +149,6 @@
             position: relative;
         }
 
-        /* Ghost hints overlaid on input */
         .input-hints {
             position: absolute;
             top: 0;
@@ -240,24 +191,12 @@
             font-size: inherit;
         }
 
-        /* Blinking cursor for typed outputs */
-        .cursor-blink {
-            display: inline-block;
-            width: 8px;
-            height: 16px;
-            background: var(--green);
-            animation: blink var(--cursor-blink) step-end infinite;
-            vertical-align: middle;
-            margin-left: 2px;
-        }
-
         @keyframes blink {
             50% {
                 opacity: 0;
             }
         }
 
-        /* Styled output elements */
         .line {
             margin: 1px 0;
         }
@@ -307,7 +246,6 @@
             letter-spacing: 1px;
         }
 
-        /* Tags inline */
         .tag {
             display: inline-block;
             font-size: inherit;
@@ -325,14 +263,12 @@
             color: var(--text-dim);
         }
 
-        /* Separator */
         .separator {
             color: var(--text-dim);
             margin: 6px 0;
             opacity: 0.4;
         }
 
-        /* Status bar */
         .status-bar {
             display: flex;
             justify-content: space-between;
@@ -341,101 +277,10 @@
             color: var(--bg);
             font-size: 11px;
             font-weight: 700;
-            margin-top: 0;
-            border-radius: 0 0 10px 10px;
             letter-spacing: 0.5px;
         }
 
-        /* Link style */
-        .term-link {
-            color: var(--cyan);
-            text-decoration: underline;
-            text-decoration-style: dotted;
-            text-underline-offset: 3px;
-            cursor: pointer;
-        }
 
-        .term-link:hover {
-            color: var(--green);
-        }
-
-        /* Loading animation */
-
-        /* Hint bar */
-        .hint-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 8px 16px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            font-size: 12px;
-        }
-
-        .hint-label {
-            color: var(--text-dim);
-        }
-
-        .hint-cmd {
-            color: var(--green);
-            cursor: pointer;
-            padding: 2px 8px;
-            border: 1px solid transparent;
-            border-radius: 3px;
-            transition: border-color 0.2s, background 0.2s;
-        }
-
-        .hint-cmd:hover {
-            border-color: var(--green);
-            background: rgba(0, 255, 136, 0.06);
-            text-shadow: 0 0 6px var(--green-glow);
-        }
-
-        .hint-sep {
-            color: var(--text-dim);
-            opacity: 0.3;
-        }
-
-        .simple-view-line {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 6px;
-        }
-
-        .simple-view-btn {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            color: var(--green);
-            padding: 9px 20px;
-            border-radius: 8px;
-            font-family: inherit;
-            letter-spacing: 0.08em;
-            font-size: 12px;
-            cursor: pointer;
-            box-shadow: 0 0 25px rgba(0, 255, 136, 0.13);
-            transition: border 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
-        }
-
-        .simple-view-btn:hover {
-            border-color: var(--green);
-            background: rgba(0, 255, 136, 0.08);
-            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-        }
-
-        .simple-view-btn:focus-visible {
-            outline: 2px solid var(--cyan);
-            outline-offset: 2px;
-            border-color: var(--cyan);
-        }
-
-        .simple-view-btn:active {
-            transform: translateY(1px);
-        }
-
-        /* Inline clickable commands in output */
         .cmd-link {
             color: var(--green);
             cursor: pointer;
@@ -448,34 +293,20 @@
             text-shadow: 0 0 6px var(--green-glow);
         }
 
-        .loading-dots::after {
-            content: '';
-            animation: dots 1.5s steps(4, end) infinite;
+        /* Recruiter banner — styled as a terminal MOTD notice */
+        .recruiter-banner {
+            border: 1px dashed var(--amber);
+            padding: 8px 14px;
+            margin: 2px 0;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
         }
 
-        @keyframes dots {
-            0% {
-                content: '';
-            }
-
-            25% {
-                content: '.';
-            }
-
-            50% {
-                content: '..';
-            }
-
-            75% {
-                content: '...';
-            }
-
-            100% {
-                content: '';
-            }
+        .recruiter-banner:hover {
+            border-color: var(--green);
+            background: rgba(0, 255, 136, 0.03);
         }
 
-        /* Fade in animation for new blocks */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -492,7 +323,6 @@
             animation: fadeIn 0.3s ease forwards;
         }
 
-        /* Mobile adjustments */
         @media (max-width: 640px) {
             .terminal-wrapper {
                 padding: 8px;
@@ -516,17 +346,10 @@
 <body>
 
     <div class="terminal-wrapper">
-        <div class="title-bar">
-            <div class="title-bar-dots">
-                <span></span><span></span><span></span>
-            </div>
-            <div class="title-bar-text">aashima@dev — bash — 120×40</div>
-        </div>
-
         <div class="terminal-body" id="terminal">
             <div id="output"></div>
             <div class="prompt-line" id="prompt-line">
-                <span class="prompt-symbol">❯</span>
+                <span class="prompt-symbol">></span>
                 <span class="prompt-path">~/portfolio</span>
                 <span class="prompt-git">(main)</span>
                 <span class="prompt-arrow">$</span>
@@ -534,7 +357,7 @@
                     <input type="text" id="command-input" spellcheck="false" autocomplete="off" autofocus>
                     <span id="input-hints" class="input-hints">
                         <span class="ghost-cmd" onclick="runCmd('help')">help</span>
-                        <span class="ghost-sep">·</span>
+                        <span class="ghost-sep">|</span>
                         <span class="ghost-cmd" onclick="runCmd('clear')">clear</span>
                     </span>
                 </div>
@@ -547,20 +370,6 @@
             <span>utf-8</span>
             <span id="clock"></span>
         </div>
-        <div class="hint-bar">
-            <span class="hint-label">try:</span>
-            <span class="hint-cmd" onclick="runCmd('whoami')">whoami</span>
-            <span class="hint-sep">·</span>
-            <span class="hint-cmd" onclick="runCmd('resume')">resume</span>
-            <span class="hint-sep">·</span>
-            <span class="hint-cmd" onclick="runCmd('projects')">projects</span>
-            <span class="hint-sep">·</span>
-            <span class="hint-cmd" onclick="runCmd('research')">research</span>
-            <span class="hint-sep">·</span>
-            <span class="hint-cmd" onclick="runCmd('contact')">contact</span>
-            <span class="hint-sep">·</span>
-            <span class="hint-cmd" onclick="runCmd('nontech')">nontech</span>
-        </div>
     </div>
 
     <script>
@@ -569,10 +378,9 @@
         const terminal = document.getElementById('terminal');
         const clock = document.getElementById('clock');
 
-        // ——— CONFIG: Edit your details here ———
         const CONFIG = {
             name: "Aashima Singh Sisodia",
-            title: "CS & Math @ UIUC · Quantum Computing · Distributed Systems",
+            title: "CS & Math @ UIUC | Quantum Computing | Distributed Systems",
             email: "aashima2@illinois.edu",
             phone: "(331) 328-0486",
             github: "github.com/aashima",
@@ -595,28 +403,28 @@
                 {
                     name: "distributed-gpu-failover",
                     role: "Coordinated Science Lab, UIUC",
-                    period: "Sep 2025 – Present",
+                    period: "Sep 2025 - Present",
                     desc: "Building a distributed GPU heartbeat and failover pipeline for automatic detection, isolation, and workload reassignment across multi-GPU clusters. Ensuring paged KV-cache consistency and SLO-aware scheduling during recovery.",
                     tech: ["Distributed Systems", "GPU", "LLM Infrastructure"]
                 },
                 {
                     name: "quantum-ml-encryption",
                     role: "Google",
-                    period: "May 2023 – May 2025",
+                    period: "May 2023 - May 2025",
                     desc: "Developed quantum ML algorithms and built huaqhuaq, a custom Python package for quantum circuit simulation. Researched cryptographic vulnerabilities via Shor's algorithm and the Hidden Subgroup Problem.",
                     tech: ["Python", "Cirq", "TF Quantum", "Cryptography"]
                 },
                 {
                     name: "quantum-chaos-nv-centers",
                     role: "University of Chicago",
-                    period: "Sep 2023 – Jun 2025",
+                    period: "Sep 2023 - Jun 2025",
                     desc: "Simulated spin dynamics in nitrogen-vacancy centers in diamond to explore quantum chaos. Applied Lyapunov exponents to measure perturbation sensitivity in quantum spin environments.",
                     tech: ["Python", "PyCCE", "Dynamical Systems"]
                 },
                 {
                     name: "impulsive-diff-pest-mgmt",
                     role: "Benedictine University",
-                    period: "Dec 2022 – Jan 2024",
+                    period: "Dec 2022 - Jan 2024",
                     desc: "Designed impulsive differential equation models for integrated pest management using MATLAB. Evaluated eradication parameters using Floquet theory. Presented at BEER 2023 in Richmond, VA.",
                     tech: ["MATLAB", "Diff Equations", "Floquet Theory"]
                 }
@@ -644,33 +452,16 @@
             education: {
                 university: "University of Illinois: Urbana-Champaign",
                 degree: "B.S. Computer Science & Mathematics",
-                period: "Aug 2025 – May 2029",
+                period: "Aug 2025 - May 2029",
                 prior: "Illinois Mathematics and Science Academy (IMSA)"
             },
             awards: [
-                "Ross Mathematics Program — Book Award recipient (2022)",
-                "Code Ada Hackathon — Winner, AI/ML Track",
-                "Mu Alpha Theta — President, organized JHMC (450+ students, $2.5k sponsorships)"
-            ],
-            recruiter: {
-                summary: [
-                    "Bridges technical research with real-world impact by translating complex initiatives into clear deliverables.",
-                    "Partners with cross-functional teams to scope priorities, manage expectations, and ship polished experiences."
-                ],
-                impact: [
-                    "Scaled a distributed GPU failover pipeline that keeps multi-GPU clusters reliable for operational ops teams.",
-                    "Made quantum research approachable for leadership by distilling insights into actionable roadmaps."
-                ],
-                values: [
-                    "Transparent communicator",
-                    "Customer-first collaborator",
-                    "Mentor to peers",
-                    "Delivery-focused"
-                ]
-            }
+                "Ross Mathematics Program -- Book Award recipient (2022)",
+                "Code Ada Hackathon -- Winner, AI/ML Track",
+                "Mu Alpha Theta -- President, organized JHMC (450+ students, $2.5k sponsorships)"
+            ]
         };
 
-        // Clock
         function updateClock() {
             const now = new Date();
             clock.textContent = now.toLocaleTimeString('en-US', { hour12: false });
@@ -678,11 +469,9 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        // Command history
         let history = [];
         let historyIndex = -1;
 
-        // Helpers
         function print(html, cls = '') {
             const div = document.createElement('div');
             div.className = `line fade-in ${cls}`;
@@ -697,50 +486,45 @@
             output.appendChild(div);
         }
 
-        function printSep() {
-            print('─'.repeat(60), 'separator');
-        }
-
-        function printBlank() {
-            print('&nbsp;');
-        }
+        function printSep() { print('\u2500'.repeat(60), 'separator'); }
+        function printBlank() { print('&nbsp;'); }
 
         function scrollBottom() {
             terminal.scrollTop = terminal.scrollHeight;
             window.scrollTo(0, document.body.scrollHeight);
         }
 
-        // ——— ASCII banner ———
         const BANNER = `
- █████╗  █████╗ ███████╗██╗  ██╗██╗███╗   ███╗ █████╗     ███████╗██╗███████╗ ██████╗ ██████╗ ██╗ █████╗
-██╔══██╗██╔══██╗██╔════╝██║  ██║██║████╗ ████║██╔══██╗    ██╔════╝██║██╔════╝██╔═══██╗██╔══██╗██║██╔══██╗
-███████║███████║███████╗███████║██║██╔████╔██║███████║    ███████╗██║███████╗██║   ██║██║  ██║██║███████║
-██╔══██║██╔══██║╚════██║██╔══██║██║██║╚██╔╝██║██╔══██║    ╚════██║██║╚════██║██║   ██║██║  ██║██║██╔══██║
-██║  ██║██║  ██║███████║██║  ██║██║██║ ╚═╝ ██║██║  ██║    ███████║██║███████║╚██████╔╝██████╔╝██║██║  ██║
-╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚═╝  ╚═╝    ╚══════╝╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝
-
+ \u2588\u2588\u2588\u2588\u2588\u2557  \u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557  \u2588\u2588\u2557\u2588\u2588\u2557\u2588\u2588\u2588\u2557   \u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2557     \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2588\u2557
+\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2557 \u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557    \u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2550\u2550\u255D\u2588\u2588\u2554\u2550\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2557
+\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2554\u2588\u2588\u2588\u2588\u2554\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551    \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2557\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551
+\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u255A\u2550\u2550\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2551\u255A\u2588\u2588\u2554\u255D\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551    \u255A\u2550\u2550\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551\u255A\u2550\u2550\u2550\u2550\u2588\u2588\u2551\u2588\u2588\u2551   \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2554\u2550\u2550\u2588\u2588\u2551
+\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2551 \u255A\u2550\u255D \u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551    \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u2588\u2588\u2551\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2551\u255A\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D\u2588\u2588\u2588\u2588\u2588\u2588\u2554\u255D\u2588\u2588\u2551\u2588\u2588\u2551  \u2588\u2588\u2551
+\u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D\u255A\u2550\u255D\u255A\u2550\u255D     \u255A\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D    \u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D\u255A\u2550\u255D\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u2550\u255D \u255A\u2550\u2550\u2550\u2550\u2550\u255D \u255A\u2550\u255D\u255A\u2550\u255D  \u255A\u2550\u255D
 `;
 
-        // ——— COMMANDS ———
         const commands = {
             help() {
                 printBlank();
                 print('Available commands:', 'line-bright line-bold');
                 printBlank();
-                print('  <span class="line-green">whoami</span>        — about me');
-                print('  <span class="line-green">skills</span>        — tech stack & tools');
-                print('  <span class="line-green">research</span>      — research experience');
-                print('  <span class="line-green">projects</span>      — featured projects');
-                print('  <span class="line-green">education</span>     — academic background');
-                print('  <span class="line-green">awards</span>        — honors & achievements');
-                print('  <span class="line-green">contact</span>       — get in touch');
-                print('  <span class="line-green">links</span>         — socials & profiles');
-                print('  <span class="line-green">neofetch</span>      — system info, dev style');
+                print('  <span class="line-green">whoami</span>        -- about me');
+                print('  <span class="line-green">skills</span>        -- tech stack & tools');
+                print('  <span class="line-green">research</span>      -- research experience');
+                print('  <span class="line-green">projects</span>      -- featured projects');
+                print('  <span class="line-green">education</span>     -- academic background');
+                print('  <span class="line-green">awards</span>        -- honors & achievements');
+                print('  <span class="line-green">resume</span>        -- everything at a glance');
+                print('  <span class="line-green">overview</span>      -- plain-english summary');
+                print('  <span class="line-green">contact</span>       -- get in touch');
+                print('  <span class="line-green">links</span>         -- socials & profiles');
+                print('  <span class="line-green">neofetch</span>      -- system info, dev style');
+                print('  <span class="line-green">photo</span>         -- ASCII portrait');
                 printSep();
-                print('  <span class="line-dim">clear</span>         — clear terminal');
-                print('  <span class="line-dim">history</span>       — command history');
-                print('  <span class="line-dim">date</span>          — current date/time');
-                print('  <span class="line-dim">echo [msg]</span>    — repeat after me');
+                print('  <span class="line-dim">clear</span>         -- clear terminal');
+                print('  <span class="line-dim">history</span>       -- command history');
+                print('  <span class="line-dim">date</span>          -- current date/time');
+                print('  <span class="line-dim">echo [msg]</span>    -- repeat after me');
                 printBlank();
             },
 
@@ -751,7 +535,7 @@
                 printSep();
                 CONFIG.bio.forEach(line => print(line));
                 printBlank();
-                print(`<span class="line-dim">📍 ${CONFIG.location}</span>`);
+                print(`<span class="line-dim">${CONFIG.location}</span>`);
                 printBlank();
             },
 
@@ -786,7 +570,7 @@
                 printSep();
                 CONFIG.research.forEach((r, i) => {
                     print(`<span class="line-green">  /${r.name}</span>`);
-                    print(`  <span class="line-cyan">${r.role}</span> <span class="line-dim">· ${r.period}</span>`);
+                    print(`  <span class="line-cyan">${r.role}</span> <span class="line-dim">| ${r.period}</span>`);
                     print(`  ${r.desc}`);
                     print(`  ${r.tech.map(t => `<span class="tag">${t}</span>`).join(' ')}`);
                     if (i < CONFIG.research.length - 1) print('');
@@ -811,7 +595,7 @@
                 print('Honors & Achievements', 'line-bright line-bold');
                 printSep();
                 CONFIG.awards.forEach(a => {
-                    print(`  <span class="line-amber">★</span> ${a}`);
+                    print(`  <span class="line-amber">*</span> ${a}`);
                 });
                 printBlank();
             },
@@ -819,7 +603,7 @@
             contact() {
                 printBlank();
                 print('Contact', 'line-bright line-bold');
-                print('<span class="line-dim">Starting interactive session. Answer each prompt.</span>');
+                print('<span class="line-dim">Answer each prompt. Esc to cancel.</span>');
                 printSep();
                 startContactFlow();
             },
@@ -839,42 +623,41 @@
                 printBlank();
                 const info = [
                     `<span class="line-green line-bold">${CONFIG.name}@portfolio</span>`,
-                    `<span class="line-dim">${'─'.repeat(30)}</span>`,
+                    `<span class="line-dim">${'\u2500'.repeat(30)}</span>`,
                     `<span class="line-amber">OS:</span>        CS & Math Brain v2.0`,
                     `<span class="line-amber">Host:</span>      UIUC, Champaign-Urbana`,
                     `<span class="line-amber">Kernel:</span>    Caffeine 4.2.0-lts`,
                     `<span class="line-amber">Uptime:</span>    Coding since '22`,
                     `<span class="line-amber">Shell:</span>     quantum-flavored zsh`,
                     `<span class="line-amber">Research:</span>  Google, UChicago, CSL`,
-                    `<span class="line-amber">Focus:</span>     Quantum · Distributed · ML`,
+                    `<span class="line-amber">Focus:</span>     Quantum | Distributed | ML`,
                     `<span class="line-amber">Lang:</span>      ${CONFIG.skills.languages.join(', ')}`,
                     `<span class="line-amber">Theme:</span>     Custom (green phosphor)`,
                 ];
 
                 const art = [
-                    '    ╔══════════════╗',
-                    '    ║  ┌─────────┐ ║',
-                    '    ║  │ > hello  │ ║',
-                    '    ║  │ > world  │ ║',
-                    '    ║  │ > _      │ ║',
-                    '    ║  └─────────┘ ║',
-                    '    ╚══════════════╝',
-                    '     ╱╱╱╱╱╱╱╱╱╱╱╱╱╱',
-                    '    ┌──────────────┐',
-                    '    └──────────────┘',
+                    '    +================+',
+                    '    |  +---------+   |',
+                    '    |  | > hello |   |',
+                    '    |  | > world |   |',
+                    '    |  | > _     |   |',
+                    '    |  +---------+   |',
+                    '    +================+',
+                    '     ///////////////',
+                    '    +----------------+',
+                    '    +----------------+',
                     '',
                 ];
 
                 for (let i = 0; i < Math.max(art.length, info.length); i++) {
-                    const a = art[i] || '                      ';
+                    const a = art[i] || '                       ';
                     const b = info[i] || '';
                     print(`<span class="line-cyan">${a}</span>   ${b}`);
                 }
                 printBlank();
 
-                // Color blocks
                 const colors = ['#ff5f57', '#febc2e', '#28c840', '#00d4ff', '#a855f7', '#ff3888', '#ffb800', '#c0c0d0'];
-                const blocks = colors.map(c => `<span style="background:${c};color:${c}">███</span>`).join('');
+                const blocks = colors.map(c => `<span style="background:${c};color:${c}">===</span>`).join('');
                 print('    ' + blocks);
                 printBlank();
             },
@@ -883,7 +666,7 @@
                 printBlank();
                 print(`<span class="line-green line-bold">${CONFIG.name}</span>`);
                 print(`<span class="line-cyan">${CONFIG.title}</span>`);
-                print(`<span class="line-dim">${CONFIG.email} · ${CONFIG.phone} · ${CONFIG.location}</span>`);
+                print(`<span class="line-dim">${CONFIG.email} | ${CONFIG.phone} | ${CONFIG.location}</span>`);
                 printSep();
 
                 print('<span class="line-bright line-bold">Education</span>');
@@ -901,19 +684,19 @@
 
                 print('<span class="line-bright line-bold">Research</span>');
                 CONFIG.research.forEach(r => {
-                    print(`  <span class="line-green">${r.name}</span> <span class="line-dim">— ${r.role} (${r.period})</span>`);
+                    print(`  <span class="line-green">${r.name}</span> <span class="line-dim">-- ${r.role} (${r.period})</span>`);
                 });
                 printBlank();
 
                 print('<span class="line-bright line-bold">Projects</span>');
                 CONFIG.projects.forEach(p => {
-                    print(`  <span class="line-green">${p.name}</span> <span class="line-dim">— ${p.context}</span>`);
+                    print(`  <span class="line-green">${p.name}</span> <span class="line-dim">-- ${p.context}</span>`);
                 });
                 printBlank();
 
                 print('<span class="line-bright line-bold">Awards</span>');
                 CONFIG.awards.forEach(a => {
-                    print(`  <span class="line-amber">★</span> ${a}`);
+                    print(`  <span class="line-amber">*</span> ${a}`);
                 });
                 printBlank();
 
@@ -921,25 +704,41 @@
                 printBlank();
             },
 
-            nontech() {
+            overview() {
                 printBlank();
-                print('Recruiter-friendly summary', 'line-bright line-bold');
+                print('<span class="line-dim">$ cat README.md</span>');
+                printBlank();
+                print(`<span class="line-bright line-bold">${CONFIG.name}</span>`);
+                print(`<span class="line-cyan">${CONFIG.title}</span>`);
                 printSep();
-                CONFIG.recruiter.summary.forEach(line => print(line));
                 printBlank();
-                print('Impact highlights', 'line-amber line-bold');
-                CONFIG.recruiter.impact.forEach(item => print(`  ${item}`));
+                print('I build software at the boundary of theory and practice.');
+                print('My research spans quantum computing, distributed GPU systems,');
+                print('and machine learning -- always with an eye on real-world impact.');
                 printBlank();
-                const values = CONFIG.recruiter.values.map(v => `<span class="tag">${v}</span>`).join(' ');
-                print(values);
+                print('<span class="line-bright line-bold">Where I\'ve worked</span>');
+                print('  <span class="line-green">Google</span>           Quantum ML & cryptography (2 years)');
+                print('  <span class="line-green">UChicago</span>         Quantum chaos & spin dynamics');
+                print('  <span class="line-green">UIUC CSL</span>         Distributed GPU failover (current)');
+                print('  <span class="line-green">Benedictine U</span>    Differential modeling, published');
                 printBlank();
-                print(`<span class="line-dim">Type </span><span class="cmd-link" onclick="runCmd('contact')">contact</span><span class="line-dim"> to schedule a chat.</span>`);
+                print('<span class="line-bright line-bold">What I\'ve built</span>');
+                print('  <span class="line-green">Nexus AI</span>         Document intelligence platform (RAG + Claude)');
+                print('  <span class="line-green">FutureYou</span>        AI career mentor -- hackathon winner');
+                print('  <span class="line-green">Pricing models</span>   Options pricing for financial engineering');
+                printBlank();
+                print('<span class="line-bright line-bold">What I bring</span>');
+                print('  Strong technical foundations with research depth.');
+                print('  Clear communicator -- presented to teams at Google');
+                print('  and at an international research symposium.');
+                print('  Collaborative -- mentored peers, organized competitions');
+                print('  for 450+ students, secured sponsorships from Jane Street.');
+                printBlank();
+                print(`<span class="line-dim">Reach me at </span><span class="line-cyan">${CONFIG.email}</span><span class="line-dim"> or type </span><span class="cmd-link" onclick="runCmd('contact')">contact</span>`);
                 printBlank();
             },
 
-            clear() {
-                output.innerHTML = '';
-            },
+            clear() { output.innerHTML = ''; },
 
             history() {
                 printBlank();
@@ -959,70 +758,103 @@
                 printBlank();
                 printRaw(args || '');
                 printBlank();
+            },
+
+            photo() {
+                printBlank();
+                print('ASCII Portrait', 'line-bright line-bold');
+                print('<span class="line-dim">Loading high-res portrait...</span>');
+                printSep();
+                fetch('ansi_html.txt')
+                    .then(r => r.text())
+                    .then(html => {
+                        const artDiv = document.createElement('div');
+                        artDiv.className = 'fade-in';
+                        artDiv.innerHTML = html;
+                        output.appendChild(artDiv);
+                        printBlank();
+                        scrollBottom();
+                    })
+                    .catch(() => {
+                        print('<span class="line-red">Failed to load portrait</span>');
+                    });
             }
         };
 
-        // ——— HELPER: run a command programmatically ———
         function runCmd(cmd) {
-            // Echo it like the user typed it
-            print(`<span class="prompt-symbol">❯</span> <span class="prompt-path">~/portfolio</span> <span class="prompt-git">(main)</span> <span class="prompt-arrow">$</span> <span class="line-bright">${escapeHtml(cmd)}</span>`);
+            print(`<span class="prompt-symbol">></span> <span class="prompt-path">~/portfolio</span> <span class="prompt-git">(main)</span> <span class="prompt-arrow">$</span> <span class="line-bright">${escapeHtml(cmd)}</span>`);
             history.push(cmd);
             historyIndex = history.length;
-            if (commands[cmd]) {
-                commands[cmd]();
-            }
+            if (commands[cmd]) { commands[cmd](); }
             scrollBottom();
             input.focus();
         }
 
-        // ——— BOOT SEQUENCE ———
         function boot() {
             const pre = document.createElement('pre');
             pre.className = 'ascii-art fade-in';
             pre.textContent = BANNER;
             output.appendChild(pre);
 
-            print(`<span class="line-dim">v1.0.0 · last login: ${new Date().toLocaleDateString()}</span>`);
+            // Load photo portrait with info beside it
+            const heroSection = document.createElement('div');
+            heroSection.className = 'fade-in';
+            heroSection.style.cssText = 'display:flex;align-items:center;gap:20px;margin:2px 0;';
+
+            const photoContainer = document.createElement('div');
+            const infoContainer = document.createElement('div');
+            infoContainer.style.lineHeight = '1.1';
+            infoContainer.innerHTML = `
+                <div class="line-green line-bold" style="font-size:18px;margin-bottom:2px;line-height:1.2;">${CONFIG.name}</div>
+                <div class="line-cyan" style="margin-bottom:2px;line-height:1.2;">${CONFIG.title}</div>
+                <div class="line-dim" style="line-height:1.2;">${CONFIG.email}</div>
+                <div class="line-dim" style="line-height:1.2;">${CONFIG.location}</div>
+            `;
+
+            heroSection.appendChild(photoContainer);
+            heroSection.appendChild(infoContainer);
+            output.appendChild(heroSection);
+
+            fetch('ansi_html.txt')
+                .then(r => r.text())
+                .then(html => {
+                    photoContainer.innerHTML = html + '<div class="line-dim" style="font-size:10px;margin-top:4px;white-space:nowrap;">^btw, this is art generated to ansii -- highlight it :p</div>';
+                    scrollBottom();
+                })
+                .catch(() => { });
+
             printBlank();
 
-            // Auto-show a welcome summary so non-technical visitors see the key info
-            print(`<span class="line-green line-bold">${CONFIG.name}</span>  <span class="line-cyan">${CONFIG.title}</span>`);
-            print(`<span class="line-dim">${CONFIG.email} · ${CONFIG.location}</span>`);
-            printBlank();
-            CONFIG.bio.forEach(line => print(line));
+            // Recruiter banner — terminal MOTD style
+            const banner = document.createElement('div');
+            banner.className = 'recruiter-banner fade-in';
+            banner.onclick = () => runCmd('overview');
+            banner.innerHTML = `<span class="line-amber">[ NOTICE ]</span> <span class="line-dim">Not a developer?</span> <span class="line-bright">Click here</span> <span class="line-dim">or type</span> <span class="line-green">overview</span> <span class="line-dim">for a plain-english summary.</span>`;
+            output.appendChild(banner);
+
             printBlank();
 
-            // Clickable quick-nav
-            print(`<span class="line-dim">───── quick links ─────</span>`);
-            printBlank();
             const cmds = [
                 { cmd: 'resume', label: 'full resume' },
-                { cmd: 'nontech', label: 'recruiter-friendly view' },
                 { cmd: 'research', label: 'research experience' },
                 { cmd: 'projects', label: 'featured projects' },
                 { cmd: 'skills', label: 'tech stack' },
                 { cmd: 'contact', label: 'get in touch' },
             ];
             cmds.forEach(c => {
-                print(`  <span class="cmd-link" onclick="runCmd('${c.cmd}')">${c.cmd}</span>  <span class="line-dim">— ${c.label}</span>`);
+                print(`  <span class="cmd-link" onclick="runCmd('${c.cmd}')">${c.cmd}</span>  <span class="line-dim">-- ${c.label}</span>`);
             });
             printBlank();
-            print(`<span class="line-dim">Click any command above, use the bar below, or type </span><span class="cmd-link" onclick="runCmd('help')">help</span><span class="line-dim"> to see all commands.</span>`);
+            print(`<span class="line-dim">Click a command, use the bar below, or type </span><span class="cmd-link" onclick="runCmd('help')">help</span>`);
             printBlank();
 
             scrollBottom();
         }
 
-        // ——— INPUT HANDLING ———
         const inputHints = document.getElementById('input-hints');
 
-        // Hide hints when typing, show when empty
         input.addEventListener('input', function () {
-            if (input.value.length > 0) {
-                inputHints.classList.add('hidden');
-            } else {
-                inputHints.classList.remove('hidden');
-            }
+            inputHints.classList.toggle('hidden', input.value.length > 0);
         });
 
         input.addEventListener('keydown', function (e) {
@@ -1030,8 +862,7 @@
                 const val = input.value.trim();
                 if (!val) return;
 
-                // Echo the command
-                print(`<span class="prompt-symbol">❯</span> <span class="prompt-path">~/portfolio</span> <span class="prompt-git">(main)</span> <span class="prompt-arrow">$</span> <span class="line-bright">${escapeHtml(val)}</span>`);
+                print(`<span class="prompt-symbol">></span> <span class="prompt-path">~/portfolio</span> <span class="prompt-git">(main)</span> <span class="prompt-arrow">$</span> <span class="line-bright">${escapeHtml(val)}</span>`);
 
                 history.push(val);
                 historyIndex = history.length;
@@ -1056,29 +887,18 @@
 
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    input.value = history[historyIndex];
-                }
+                if (historyIndex > 0) { historyIndex--; input.value = history[historyIndex]; }
             }
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
-                if (historyIndex < history.length - 1) {
-                    historyIndex++;
-                    input.value = history[historyIndex];
-                } else {
-                    historyIndex = history.length;
-                    input.value = '';
-                }
+                if (historyIndex < history.length - 1) { historyIndex++; input.value = history[historyIndex]; }
+                else { historyIndex = history.length; input.value = ''; }
             }
         });
 
-        // Click terminal to focus input
         terminal.addEventListener('click', () => input.focus());
 
-        // Contact flow state
         let contactFlow = null;
-
         const contactSteps = [
             { key: 'name', prompt: 'name' },
             { key: 'email', prompt: 'email' },
@@ -1093,44 +913,35 @@
 
         function showContactPrompt() {
             const step = contactSteps[contactFlow.step];
-            // Create a prompt line for the contact field
             const line = document.createElement('div');
             line.className = 'line fade-in';
             line.innerHTML = `<span class="line-amber">${step.prompt}:</span> `;
             output.appendChild(line);
 
-            // Hide the main prompt and hijack input
             document.getElementById('prompt-line').style.display = 'none';
 
-            const contactInput = document.createElement('input');
-            contactInput.type = 'text';
-            contactInput.spellcheck = false;
-            contactInput.autocomplete = 'off';
-            contactInput.style.cssText = 'background:none;border:none;color:#e8e8f0;font-family:inherit;font-size:inherit;outline:none;caret-color:#00ff88;width:60%;';
-            line.appendChild(contactInput);
-            contactInput.focus();
+            const ci = document.createElement('input');
+            ci.type = 'text';
+            ci.spellcheck = false;
+            ci.autocomplete = 'off';
+            ci.style.cssText = 'background:none;border:none;color:#e8e8f0;font-family:inherit;font-size:inherit;outline:none;caret-color:#00ff88;width:60%;';
+            line.appendChild(ci);
+            ci.focus();
 
-            contactInput.addEventListener('keydown', function handler(e) {
+            ci.addEventListener('keydown', function handler(e) {
                 if (e.key === 'Enter') {
-                    const val = contactInput.value.trim();
+                    const val = ci.value.trim();
                     if (!val) return;
-
-                    // Lock in the value — replace input with static text
-                    contactInput.removeEventListener('keydown', handler);
-                    contactInput.replaceWith(document.createTextNode(val));
-
+                    ci.removeEventListener('keydown', handler);
+                    ci.replaceWith(document.createTextNode(val));
                     contactFlow.data[contactSteps[contactFlow.step].key] = val;
                     contactFlow.step++;
-
-                    if (contactFlow.step < contactSteps.length) {
-                        showContactPrompt();
-                    } else {
-                        finishContactFlow();
-                    }
+                    if (contactFlow.step < contactSteps.length) { showContactPrompt(); }
+                    else { finishContactFlow(); }
                 }
                 if (e.key === 'Escape') {
-                    contactInput.removeEventListener('keydown', handler);
-                    contactInput.replaceWith(document.createTextNode('^C'));
+                    ci.removeEventListener('keydown', handler);
+                    ci.replaceWith(document.createTextNode('^C'));
                     print('<span class="line-red">  contact: aborted</span>');
                     printBlank();
                     contactFlow = null;
@@ -1146,7 +957,7 @@
             const d = contactFlow.data;
             printBlank();
             printSep();
-            print('<span class="line-green">✓ Message queued for /dev/inbox</span>');
+            print('<span class="line-green">+ Message queued for /dev/inbox</span>');
             print(`<span class="line-dim">  from: ${escapeHtml(d.name)} &lt;${escapeHtml(d.email)}&gt;</span>`);
             print(`<span class="line-dim">  subj: ${escapeHtml(d.subject)}</span>`);
             print(`<span class="line-dim">  body: ${escapeHtml(d.message.substring(0, 60))}${d.message.length > 60 ? '...' : ''}</span>`);
@@ -1164,7 +975,6 @@
             return div.innerHTML;
         }
 
-        // Boot
         boot();
         input.focus();
     </script>
