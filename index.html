@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>portfolio — terminal</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Fira+Code:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg-panel: #0e0e16;
+            --border: #1a1a2e;
+            --text: #c0c0d0;
+            --text-dim: #555570;
+            --text-bright: #e8e8f0;
+            --green: #00ff88;
+            --green-dim: #00cc6a;
+            --green-glow: rgba(0, 255, 136, 0.15);
+            --amber: #ffb800;
+            --cyan: #00d4ff;
+            --magenta: #ff3888;
+            --red: #ff4444;
+            --purple: #a855f7;
+            --cursor-blink: 1s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) var(--bg);
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.7;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Scanline overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 0, 0, 0.03) 2px,
+                    rgba(0, 0, 0, 0.03) 4px);
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* CRT vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        .terminal-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Title bar */
+        .title-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            margin-top: 20px;
+        }
+
+        .title-bar-dots {
+            display: flex;
+            gap: 7px;
+        }
+
+        .title-bar-dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .title-bar-dots span:nth-child(1) {
+            background: #ff5f57;
+        }
+
+        .title-bar-dots span:nth-child(2) {
+            background: #febc2e;
+        }
+
+        .title-bar-dots span:nth-child(3) {
+            background: #28c840;
+        }
+
+        .title-bar-text {
+            flex: 1;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        /* Main terminal body */
+        .terminal-body {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0 0 10px 10px;
+            padding: 30px;
+            min-height: 600px;
+            position: relative;
+        }
+
+        /* Output area */
+        #output {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Prompt line */
+        .prompt-line {
+            display: flex;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .prompt-symbol {
+            color: var(--green);
+            margin-right: 4px;
+            user-select: none;
+            text-shadow: 0 0 8px var(--green-glow);
+        }
+
+        .prompt-path {
+            color: var(--cyan);
+            margin-right: 8px;
+            user-select: none;
+        }
+
+        .prompt-git {
+            color: var(--magenta);
+            margin-right: 8px;
+            user-select: none;
+        }
+
+        .prompt-arrow {
+            color: var(--green);
+            margin-right: 8px;
+            user-select: none;
+            text-shadow: 0 0 8px var(--green-glow);
+        }
+
+        #command-input {
+            background: none;
+            border: none;
+            color: var(--text-bright);
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            width: 100%;
+            caret-color: var(--green);
+            line-height: inherit;
+            position: relative;
+            z-index: 2;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        /* Ghost hints overlaid on input */
+        .input-hints {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            height: 100%;
+            pointer-events: auto;
+            transition: opacity 0.2s;
+            z-index: 1;
+        }
+
+        .input-hints.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .ghost-cmd {
+            color: var(--text-dim);
+            opacity: 0.7;
+            cursor: pointer;
+            font-size: inherit;
+            transition: opacity 0.2s, color 0.2s;
+            position: relative;
+            z-index: 3;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+        }
+
+        .ghost-cmd:hover {
+            opacity: 1;
+            color: var(--green);
+        }
+
+        .ghost-sep {
+            color: var(--text-dim);
+            opacity: 0.5;
+            font-size: inherit;
+        }
+
+        /* Blinking cursor for typed outputs */
+        .cursor-blink {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--green);
+            animation: blink var(--cursor-blink) step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Styled output elements */
+        .line {
+            margin: 1px 0;
+        }
+
+        .line-green {
+            color: var(--green);
+            text-shadow: 0 0 6px var(--green-glow);
+        }
+
+        .line-amber {
+            color: var(--amber);
+        }
+
+        .line-cyan {
+            color: var(--cyan);
+        }
+
+        .line-magenta {
+            color: var(--magenta);
+        }
+
+        .line-red {
+            color: var(--red);
+        }
+
+        .line-purple {
+            color: var(--purple);
+        }
+
+        .line-dim {
+            color: var(--text-dim);
+        }
+
+        .line-bright {
+            color: var(--text-bright);
+        }
+
+        .line-bold {
+            font-weight: 700;
+        }
+
+        .ascii-art {
+            color: var(--green);
+            text-shadow: 0 0 10px var(--green-glow);
+            font-size: 11px;
+            line-height: 1.2;
+            letter-spacing: 1px;
+        }
+
+        /* Tags inline */
+        .tag {
+            display: inline-block;
+            font-size: inherit;
+            margin: 0 2px 0 0;
+            color: var(--cyan);
+        }
+
+        .tag::before {
+            content: '[';
+            color: var(--text-dim);
+        }
+
+        .tag::after {
+            content: ']';
+            color: var(--text-dim);
+        }
+
+        /* Separator */
+        .separator {
+            color: var(--text-dim);
+            margin: 6px 0;
+            opacity: 0.4;
+        }
+
+        /* Status bar */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 16px;
+            background: var(--green);
+            color: var(--bg);
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 0;
+            border-radius: 0 0 10px 10px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Link style */
+        .term-link {
+            color: var(--cyan);
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+            cursor: pointer;
+        }
+
+        .term-link:hover {
+            color: var(--green);
+        }
+
+        /* Loading animation */
+
+        /* Hint bar */
+        .hint-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            font-size: 12px;
+        }
+
+        .hint-label {
+            color: var(--text-dim);
+        }
+
+        .hint-cmd {
+            color: var(--green);
+            cursor: pointer;
+            padding: 2px 8px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .hint-cmd:hover {
+            border-color: var(--green);
+            background: rgba(0, 255, 136, 0.06);
+            text-shadow: 0 0 6px var(--green-glow);
+        }
+
+        .hint-sep {
+            color: var(--text-dim);
+            opacity: 0.3;
+        }
+
+        .simple-view-line {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+
+        .simple-view-btn {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: var(--green);
+            padding: 9px 20px;
+            border-radius: 8px;
+            font-family: inherit;
+            letter-spacing: 0.08em;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.13);
+            transition: border 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
+        }
+
+        .simple-view-btn:hover {
+            border-color: var(--green);
+            background: rgba(0, 255, 136, 0.08);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .simple-view-btn:focus-visible {
+            outline: 2px solid var(--cyan);
+            outline-offset: 2px;
+            border-color: var(--cyan);
+        }
+
+        .simple-view-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Inline clickable commands in output */
+        .cmd-link {
+            color: var(--green);
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+        }
+
+        .cmd-link:hover {
+            text-shadow: 0 0 6px var(--green-glow);
+        }
+
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0% {
+                content: '';
+            }
+
+            25% {
+                content: '.';
+            }
+
+            50% {
+                content: '..';
+            }
+
+            75% {
+                content: '...';
+            }
+
+            100% {
+                content: '';
+            }
+        }
+
+        /* Fade in animation for new blocks */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 640px) {
+            .terminal-wrapper {
+                padding: 8px;
+            }
+
+            .terminal-body {
+                padding: 16px;
+            }
+
+            .ascii-art {
+                font-size: 7px;
+            }
+
+            body {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="terminal-wrapper">
+        <div class="title-bar">
+            <div class="title-bar-dots">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="title-bar-text">aashima@dev — bash — 120×40</div>
+        </div>
+
+        <div class="terminal-body" id="terminal">
+            <div id="output"></div>
+            <div class="prompt-line" id="prompt-line">
+                <span class="prompt-symbol">❯</span>
+                <span class="prompt-path">~/portfolio</span>
+                <span class="prompt-git">(main)</span>
+                <span class="prompt-arrow">$</span>
+                <div class="input-wrapper">
+                    <input type="text" id="command-input" spellcheck="false" autocomplete="off" autofocus>
+                    <span id="input-hints" class="input-hints">
+                        <span class="ghost-cmd" onclick="runCmd('help')">help</span>
+                        <span class="ghost-sep">·</span>
+                        <span class="ghost-cmd" onclick="runCmd('clear')">clear</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span>NORMAL</span>
+            <span>portfolio/main</span>
+            <span>utf-8</span>
+            <span id="clock"></span>
+        </div>
+        <div class="hint-bar">
+            <span class="hint-label">try:</span>
+            <span class="hint-cmd" onclick="runCmd('whoami')">whoami</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-cmd" onclick="runCmd('resume')">resume</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-cmd" onclick="runCmd('projects')">projects</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-cmd" onclick="runCmd('research')">research</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-cmd" onclick="runCmd('contact')">contact</span>
+            <span class="hint-sep">·</span>
+            <span class="hint-cmd" onclick="runCmd('nontech')">nontech</span>
+        </div>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        const input = document.getElementById('command-input');
+        const terminal = document.getElementById('terminal');
+        const clock = document.getElementById('clock');
+
+        // ——— CONFIG: Edit your details here ———
+        const CONFIG = {
+            name: "Aashima Singh Sisodia",
+            title: "CS & Math @ UIUC · Quantum Computing · Distributed Systems",
+            email: "aashima2@illinois.edu",
+            phone: "(331) 328-0486",
+            github: "github.com/aashima",
+            linkedin: "linkedin.com/in/aashima",
+            location: "Urbana-Champaign, IL",
+            bio: [
+                "CS & Math undergrad at UIUC building at the intersection of",
+                "quantum computing, distributed systems, and machine learning.",
+                "Former researcher at Google, UChicago, and the Coordinated Science Lab.",
+                "I like hard problems and elegant math."
+            ],
+            skills: {
+                languages: ["C++", "Python", "Java", "Rust", "JavaScript"],
+                frontend: ["React.js", "Svelte", "Tailwind CSS", "HTML/CSS"],
+                backend: ["FastAPI", "AWS Bedrock", "Pinecone"],
+                ml_quantum: ["TensorFlow", "TF Quantum", "Cirq", "NumPy", "SymPy"],
+                tools: ["MATLAB", "LaTeX", "PyCCE", "Bloomberg Terminal"]
+            },
+            research: [
+                {
+                    name: "distributed-gpu-failover",
+                    role: "Coordinated Science Lab, UIUC",
+                    period: "Sep 2025 – Present",
+                    desc: "Building a distributed GPU heartbeat and failover pipeline for automatic detection, isolation, and workload reassignment across multi-GPU clusters. Ensuring paged KV-cache consistency and SLO-aware scheduling during recovery.",
+                    tech: ["Distributed Systems", "GPU", "LLM Infrastructure"]
+                },
+                {
+                    name: "quantum-ml-encryption",
+                    role: "Google",
+                    period: "May 2023 – May 2025",
+                    desc: "Developed quantum ML algorithms and built huaqhuaq, a custom Python package for quantum circuit simulation. Researched cryptographic vulnerabilities via Shor's algorithm and the Hidden Subgroup Problem.",
+                    tech: ["Python", "Cirq", "TF Quantum", "Cryptography"]
+                },
+                {
+                    name: "quantum-chaos-nv-centers",
+                    role: "University of Chicago",
+                    period: "Sep 2023 – Jun 2025",
+                    desc: "Simulated spin dynamics in nitrogen-vacancy centers in diamond to explore quantum chaos. Applied Lyapunov exponents to measure perturbation sensitivity in quantum spin environments.",
+                    tech: ["Python", "PyCCE", "Dynamical Systems"]
+                },
+                {
+                    name: "impulsive-diff-pest-mgmt",
+                    role: "Benedictine University",
+                    period: "Dec 2022 – Jan 2024",
+                    desc: "Designed impulsive differential equation models for integrated pest management using MATLAB. Evaluated eradication parameters using Floquet theory. Presented at BEER 2023 in Richmond, VA.",
+                    tech: ["MATLAB", "Diff Equations", "Floquet Theory"]
+                }
+            ],
+            projects: [
+                {
+                    name: "nexus-ai",
+                    desc: "RAG-based document intelligence platform that transforms PDFs into structured summaries using AWS Bedrock, Pinecone vector search, and Claude 3 Sonnet. Built with FastAPI and modular pipelines.",
+                    tech: ["FastAPI", "AWS Bedrock", "Pinecone", "Claude"],
+                    context: "Disruption Lab"
+                },
+                {
+                    name: "futureyou",
+                    desc: "AI career mentor (Winner, Code Ada AI/ML Track). Uses SvelteKit, Gemini API, and a Random Forest classifier (80% F1 recall) for UIUC-specific career guidance and academic roadmaps from resume data.",
+                    tech: ["SvelteKit", "Gemini API", "Random Forest", "ML"],
+                    context: "Hackathon Winner"
+                },
+                {
+                    name: "binomial-pricing",
+                    desc: "Binomial option pricing models (CRR and BBSR) for European and American options. Building a de-Americanization pipeline to compute implied volatilities from Bloomberg Terminal data.",
+                    tech: ["Python", "NumPy", "Bloomberg", "Finance"],
+                    context: "Financial Engineering Club"
+                }
+            ],
+            education: {
+                university: "University of Illinois: Urbana-Champaign",
+                degree: "B.S. Computer Science & Mathematics",
+                period: "Aug 2025 – May 2029",
+                prior: "Illinois Mathematics and Science Academy (IMSA)"
+            },
+            awards: [
+                "Ross Mathematics Program — Book Award recipient (2022)",
+                "Code Ada Hackathon — Winner, AI/ML Track",
+                "Mu Alpha Theta — President, organized JHMC (450+ students, $2.5k sponsorships)"
+            ],
+            recruiter: {
+                summary: [
+                    "Bridges technical research with real-world impact by translating complex initiatives into clear deliverables.",
+                    "Partners with cross-functional teams to scope priorities, manage expectations, and ship polished experiences."
+                ],
+                impact: [
+                    "Scaled a distributed GPU failover pipeline that keeps multi-GPU clusters reliable for operational ops teams.",
+                    "Made quantum research approachable for leadership by distilling insights into actionable roadmaps."
+                ],
+                values: [
+                    "Transparent communicator",
+                    "Customer-first collaborator",
+                    "Mentor to peers",
+                    "Delivery-focused"
+                ]
+            }
+        };
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            clock.textContent = now.toLocaleTimeString('en-US', { hour12: false });
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Command history
+        let history = [];
+        let historyIndex = -1;
+
+        // Helpers
+        function print(html, cls = '') {
+            const div = document.createElement('div');
+            div.className = `line fade-in ${cls}`;
+            div.innerHTML = html;
+            output.appendChild(div);
+        }
+
+        function printRaw(text, cls = '') {
+            const div = document.createElement('div');
+            div.className = `line fade-in ${cls}`;
+            div.textContent = text;
+            output.appendChild(div);
+        }
+
+        function printSep() {
+            print('─'.repeat(60), 'separator');
+        }
+
+        function printBlank() {
+            print('&nbsp;');
+        }
+
+        function scrollBottom() {
+            terminal.scrollTop = terminal.scrollHeight;
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        // ——— ASCII banner ———
+        const BANNER = `
+ █████╗  █████╗ ███████╗██╗  ██╗██╗███╗   ███╗ █████╗     ███████╗██╗███████╗ ██████╗ ██████╗ ██╗ █████╗
+██╔══██╗██╔══██╗██╔════╝██║  ██║██║████╗ ████║██╔══██╗    ██╔════╝██║██╔════╝██╔═══██╗██╔══██╗██║██╔══██╗
+███████║███████║███████╗███████║██║██╔████╔██║███████║    ███████╗██║███████╗██║   ██║██║  ██║██║███████║
+██╔══██║██╔══██║╚════██║██╔══██║██║██║╚██╔╝██║██╔══██║    ╚════██║██║╚════██║██║   ██║██║  ██║██║██╔══██║
+██║  ██║██║  ██║███████║██║  ██║██║██║ ╚═╝ ██║██║  ██║    ███████║██║███████║╚██████╔╝██████╔╝██║██║  ██║
+╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝╚═╝     ╚═╝╚═╝  ╚═╝    ╚══════╝╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝
+
+`;
+
+        // ——— COMMANDS ———
+        const commands = {
+            help() {
+                printBlank();
+                print('Available commands:', 'line-bright line-bold');
+                printBlank();
+                print('  <span class="line-green">whoami</span>        — about me');
+                print('  <span class="line-green">skills</span>        — tech stack & tools');
+                print('  <span class="line-green">research</span>      — research experience');
+                print('  <span class="line-green">projects</span>      — featured projects');
+                print('  <span class="line-green">education</span>     — academic background');
+                print('  <span class="line-green">awards</span>        — honors & achievements');
+                print('  <span class="line-green">contact</span>       — get in touch');
+                print('  <span class="line-green">links</span>         — socials & profiles');
+                print('  <span class="line-green">neofetch</span>      — system info, dev style');
+                printSep();
+                print('  <span class="line-dim">clear</span>         — clear terminal');
+                print('  <span class="line-dim">history</span>       — command history');
+                print('  <span class="line-dim">date</span>          — current date/time');
+                print('  <span class="line-dim">echo [msg]</span>    — repeat after me');
+                printBlank();
+            },
+
+            whoami() {
+                printBlank();
+                print(`<span class="line-green line-bold">${CONFIG.name}</span>`);
+                print(`<span class="line-cyan">${CONFIG.title}</span>`);
+                printSep();
+                CONFIG.bio.forEach(line => print(line));
+                printBlank();
+                print(`<span class="line-dim">📍 ${CONFIG.location}</span>`);
+                printBlank();
+            },
+
+            skills() {
+                printBlank();
+                print('Tech Stack', 'line-bright line-bold');
+                printSep();
+                Object.entries(CONFIG.skills).forEach(([category, items]) => {
+                    const label = category.charAt(0).toUpperCase() + category.slice(1);
+                    const tags = items.map(i => `<span class="tag">${i}</span>`).join(' ');
+                    print(`<span class="line-amber">${label.padEnd(12)}</span>${tags}`);
+                });
+                printBlank();
+            },
+
+            projects() {
+                printBlank();
+                print('Featured Projects', 'line-bright line-bold');
+                printSep();
+                CONFIG.projects.forEach((p, i) => {
+                    print(`<span class="line-green">  /${p.name}</span>  <span class="line-dim">(${p.context})</span>`);
+                    print(`  ${p.desc}`);
+                    print(`  ${p.tech.map(t => `<span class="tag">${t}</span>`).join(' ')}`);
+                    if (i < CONFIG.projects.length - 1) print('');
+                });
+                printBlank();
+            },
+
+            research() {
+                printBlank();
+                print('Research Experience', 'line-bright line-bold');
+                printSep();
+                CONFIG.research.forEach((r, i) => {
+                    print(`<span class="line-green">  /${r.name}</span>`);
+                    print(`  <span class="line-cyan">${r.role}</span> <span class="line-dim">· ${r.period}</span>`);
+                    print(`  ${r.desc}`);
+                    print(`  ${r.tech.map(t => `<span class="tag">${t}</span>`).join(' ')}`);
+                    if (i < CONFIG.research.length - 1) print('');
+                });
+                printBlank();
+            },
+
+            education() {
+                printBlank();
+                print('Education', 'line-bright line-bold');
+                printSep();
+                print(`<span class="line-green line-bold">  ${CONFIG.education.university}</span>`);
+                print(`  <span class="line-cyan">${CONFIG.education.degree}</span>`);
+                print(`  <span class="line-dim">${CONFIG.education.period}</span>`);
+                printBlank();
+                print(`  <span class="line-dim">Previously:</span> ${CONFIG.education.prior}`);
+                printBlank();
+            },
+
+            awards() {
+                printBlank();
+                print('Honors & Achievements', 'line-bright line-bold');
+                printSep();
+                CONFIG.awards.forEach(a => {
+                    print(`  <span class="line-amber">★</span> ${a}`);
+                });
+                printBlank();
+            },
+
+            contact() {
+                printBlank();
+                print('Contact', 'line-bright line-bold');
+                print('<span class="line-dim">Starting interactive session. Answer each prompt.</span>');
+                printSep();
+                startContactFlow();
+            },
+
+            links() {
+                printBlank();
+                print('Links & Profiles', 'line-bright line-bold');
+                printSep();
+                print(`  <span class="line-dim">email</span>     <span class="line-cyan">${CONFIG.email}</span>`);
+                print(`  <span class="line-dim">phone</span>     <span class="line-cyan">${CONFIG.phone}</span>`);
+                print(`  <span class="line-dim">github</span>    <span class="line-cyan">${CONFIG.github}</span>`);
+                print(`  <span class="line-dim">linkedin</span>  <span class="line-cyan">${CONFIG.linkedin}</span>`);
+                printBlank();
+            },
+
+            neofetch() {
+                printBlank();
+                const info = [
+                    `<span class="line-green line-bold">${CONFIG.name}@portfolio</span>`,
+                    `<span class="line-dim">${'─'.repeat(30)}</span>`,
+                    `<span class="line-amber">OS:</span>        CS & Math Brain v2.0`,
+                    `<span class="line-amber">Host:</span>      UIUC, Champaign-Urbana`,
+                    `<span class="line-amber">Kernel:</span>    Caffeine 4.2.0-lts`,
+                    `<span class="line-amber">Uptime:</span>    Coding since '22`,
+                    `<span class="line-amber">Shell:</span>     quantum-flavored zsh`,
+                    `<span class="line-amber">Research:</span>  Google, UChicago, CSL`,
+                    `<span class="line-amber">Focus:</span>     Quantum · Distributed · ML`,
+                    `<span class="line-amber">Lang:</span>      ${CONFIG.skills.languages.join(', ')}`,
+                    `<span class="line-amber">Theme:</span>     Custom (green phosphor)`,
+                ];
+
+                const art = [
+                    '    ╔══════════════╗',
+                    '    ║  ┌─────────┐ ║',
+                    '    ║  │ > hello  │ ║',
+                    '    ║  │ > world  │ ║',
+                    '    ║  │ > _      │ ║',
+                    '    ║  └─────────┘ ║',
+                    '    ╚══════════════╝',
+                    '     ╱╱╱╱╱╱╱╱╱╱╱╱╱╱',
+                    '    ┌──────────────┐',
+                    '    └──────────────┘',
+                    '',
+                ];
+
+                for (let i = 0; i < Math.max(art.length, info.length); i++) {
+                    const a = art[i] || '                      ';
+                    const b = info[i] || '';
+                    print(`<span class="line-cyan">${a}</span>   ${b}`);
+                }
+                printBlank();
+
+                // Color blocks
+                const colors = ['#ff5f57', '#febc2e', '#28c840', '#00d4ff', '#a855f7', '#ff3888', '#ffb800', '#c0c0d0'];
+                const blocks = colors.map(c => `<span style="background:${c};color:${c}">███</span>`).join('');
+                print('    ' + blocks);
+                printBlank();
+            },
+
+            resume() {
+                printBlank();
+                print(`<span class="line-green line-bold">${CONFIG.name}</span>`);
+                print(`<span class="line-cyan">${CONFIG.title}</span>`);
+                print(`<span class="line-dim">${CONFIG.email} · ${CONFIG.phone} · ${CONFIG.location}</span>`);
+                printSep();
+
+                print('<span class="line-bright line-bold">Education</span>');
+                print(`  ${CONFIG.education.university}`);
+                print(`  <span class="line-cyan">${CONFIG.education.degree}</span> <span class="line-dim">(${CONFIG.education.period})</span>`);
+                print(`  <span class="line-dim">Previously:</span> ${CONFIG.education.prior}`);
+                printBlank();
+
+                print('<span class="line-bright line-bold">Skills</span>');
+                Object.entries(CONFIG.skills).forEach(([category, items]) => {
+                    const label = category.charAt(0).toUpperCase() + category.slice(1);
+                    print(`  <span class="line-amber">${label.padEnd(12)}</span>${items.join(', ')}`);
+                });
+                printBlank();
+
+                print('<span class="line-bright line-bold">Research</span>');
+                CONFIG.research.forEach(r => {
+                    print(`  <span class="line-green">${r.name}</span> <span class="line-dim">— ${r.role} (${r.period})</span>`);
+                });
+                printBlank();
+
+                print('<span class="line-bright line-bold">Projects</span>');
+                CONFIG.projects.forEach(p => {
+                    print(`  <span class="line-green">${p.name}</span> <span class="line-dim">— ${p.context}</span>`);
+                });
+                printBlank();
+
+                print('<span class="line-bright line-bold">Awards</span>');
+                CONFIG.awards.forEach(a => {
+                    print(`  <span class="line-amber">★</span> ${a}`);
+                });
+                printBlank();
+
+                print(`<span class="line-dim">Type </span><span class="cmd-link" onclick="runCmd('research')">research</span><span class="line-dim"> or </span><span class="cmd-link" onclick="runCmd('projects')">projects</span><span class="line-dim"> for details, or </span><span class="cmd-link" onclick="runCmd('contact')">contact</span><span class="line-dim"> to get in touch.</span>`);
+                printBlank();
+            },
+
+            nontech() {
+                printBlank();
+                print('Recruiter-friendly summary', 'line-bright line-bold');
+                printSep();
+                CONFIG.recruiter.summary.forEach(line => print(line));
+                printBlank();
+                print('Impact highlights', 'line-amber line-bold');
+                CONFIG.recruiter.impact.forEach(item => print(`  ${item}`));
+                printBlank();
+                const values = CONFIG.recruiter.values.map(v => `<span class="tag">${v}</span>`).join(' ');
+                print(values);
+                printBlank();
+                print(`<span class="line-dim">Type </span><span class="cmd-link" onclick="runCmd('contact')">contact</span><span class="line-dim"> to schedule a chat.</span>`);
+                printBlank();
+            },
+
+            clear() {
+                output.innerHTML = '';
+            },
+
+            history() {
+                printBlank();
+                history.forEach((cmd, i) => {
+                    print(`  <span class="line-dim">${String(i + 1).padStart(4)}</span>  ${cmd}`);
+                });
+                printBlank();
+            },
+
+            date() {
+                printBlank();
+                print(new Date().toString(), 'line-cyan');
+                printBlank();
+            },
+
+            echo(args) {
+                printBlank();
+                printRaw(args || '');
+                printBlank();
+            }
+        };
+
+        // ——— HELPER: run a command programmatically ———
+        function runCmd(cmd) {
+            // Echo it like the user typed it
+            print(`<span class="prompt-symbol">❯</span> <span class="prompt-path">~/portfolio</span> <span class="prompt-git">(main)</span> <span class="prompt-arrow">$</span> <span class="line-bright">${escapeHtml(cmd)}</span>`);
+            history.push(cmd);
+            historyIndex = history.length;
+            if (commands[cmd]) {
+                commands[cmd]();
+            }
+            scrollBottom();
+            input.focus();
+        }
+
+        // ——— BOOT SEQUENCE ———
+        function boot() {
+            const pre = document.createElement('pre');
+            pre.className = 'ascii-art fade-in';
+            pre.textContent = BANNER;
+            output.appendChild(pre);
+
+            print(`<span class="line-dim">v1.0.0 · last login: ${new Date().toLocaleDateString()}</span>`);
+            printBlank();
+
+            // Auto-show a welcome summary so non-technical visitors see the key info
+            print(`<span class="line-green line-bold">${CONFIG.name}</span>  <span class="line-cyan">${CONFIG.title}</span>`);
+            print(`<span class="line-dim">${CONFIG.email} · ${CONFIG.location}</span>`);
+            printBlank();
+            CONFIG.bio.forEach(line => print(line));
+            printBlank();
+
+            // Clickable quick-nav
+            print(`<span class="line-dim">───── quick links ─────</span>`);
+            printBlank();
+            const cmds = [
+                { cmd: 'resume', label: 'full resume' },
+                { cmd: 'nontech', label: 'recruiter-friendly view' },
+                { cmd: 'research', label: 'research experience' },
+                { cmd: 'projects', label: 'featured projects' },
+                { cmd: 'skills', label: 'tech stack' },
+                { cmd: 'contact', label: 'get in touch' },
+            ];
+            cmds.forEach(c => {
+                print(`  <span class="cmd-link" onclick="runCmd('${c.cmd}')">${c.cmd}</span>  <span class="line-dim">— ${c.label}</span>`);
+            });
+            printBlank();
+            print(`<span class="line-dim">Click any command above, use the bar below, or type </span><span class="cmd-link" onclick="runCmd('help')">help</span><span class="line-dim"> to see all commands.</span>`);
+            printBlank();
+
+            scrollBottom();
+        }
+
+        // ——— INPUT HANDLING ———
+        const inputHints = document.getElementById('input-hints');
+
+        // Hide hints when typing, show when empty
+        input.addEventListener('input', function () {
+            if (input.value.length > 0) {
+                inputHints.classList.add('hidden');
+            } else {
+                inputHints.classList.remove('hidden');
+            }
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                const val = input.value.trim();
+                if (!val) return;
+
+                // Echo the command
+                print(`<span class="prompt-symbol">❯</span> <span class="prompt-path">~/portfolio</span> <span class="prompt-git">(main)</span> <span class="prompt-arrow">$</span> <span class="line-bright">${escapeHtml(val)}</span>`);
+
+                history.push(val);
+                historyIndex = history.length;
+
+                const parts = val.split(/\s+/);
+                const cmd = parts[0].toLowerCase();
+                const args = parts.slice(1).join(' ');
+
+                if (commands[cmd]) {
+                    commands[cmd](args);
+                } else {
+                    printBlank();
+                    print(`<span class="line-red">command not found: ${escapeHtml(cmd)}</span>`);
+                    print(`<span class="line-dim">Type 'help' for available commands.</span>`);
+                    printBlank();
+                }
+
+                input.value = '';
+                inputHints.classList.remove('hidden');
+                scrollBottom();
+            }
+
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    input.value = history[historyIndex];
+                }
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < history.length - 1) {
+                    historyIndex++;
+                    input.value = history[historyIndex];
+                } else {
+                    historyIndex = history.length;
+                    input.value = '';
+                }
+            }
+        });
+
+        // Click terminal to focus input
+        terminal.addEventListener('click', () => input.focus());
+
+        // Contact flow state
+        let contactFlow = null;
+
+        const contactSteps = [
+            { key: 'name', prompt: 'name' },
+            { key: 'email', prompt: 'email' },
+            { key: 'subject', prompt: 'subject' },
+            { key: 'message', prompt: 'message' },
+        ];
+
+        function startContactFlow() {
+            contactFlow = { step: 0, data: {} };
+            showContactPrompt();
+        }
+
+        function showContactPrompt() {
+            const step = contactSteps[contactFlow.step];
+            // Create a prompt line for the contact field
+            const line = document.createElement('div');
+            line.className = 'line fade-in';
+            line.innerHTML = `<span class="line-amber">${step.prompt}:</span> `;
+            output.appendChild(line);
+
+            // Hide the main prompt and hijack input
+            document.getElementById('prompt-line').style.display = 'none';
+
+            const contactInput = document.createElement('input');
+            contactInput.type = 'text';
+            contactInput.spellcheck = false;
+            contactInput.autocomplete = 'off';
+            contactInput.style.cssText = 'background:none;border:none;color:#e8e8f0;font-family:inherit;font-size:inherit;outline:none;caret-color:#00ff88;width:60%;';
+            line.appendChild(contactInput);
+            contactInput.focus();
+
+            contactInput.addEventListener('keydown', function handler(e) {
+                if (e.key === 'Enter') {
+                    const val = contactInput.value.trim();
+                    if (!val) return;
+
+                    // Lock in the value — replace input with static text
+                    contactInput.removeEventListener('keydown', handler);
+                    contactInput.replaceWith(document.createTextNode(val));
+
+                    contactFlow.data[contactSteps[contactFlow.step].key] = val;
+                    contactFlow.step++;
+
+                    if (contactFlow.step < contactSteps.length) {
+                        showContactPrompt();
+                    } else {
+                        finishContactFlow();
+                    }
+                }
+                if (e.key === 'Escape') {
+                    contactInput.removeEventListener('keydown', handler);
+                    contactInput.replaceWith(document.createTextNode('^C'));
+                    print('<span class="line-red">  contact: aborted</span>');
+                    printBlank();
+                    contactFlow = null;
+                    document.getElementById('prompt-line').style.display = 'flex';
+                    input.focus();
+                    scrollBottom();
+                }
+            });
+            scrollBottom();
+        }
+
+        function finishContactFlow() {
+            const d = contactFlow.data;
+            printBlank();
+            printSep();
+            print('<span class="line-green">✓ Message queued for /dev/inbox</span>');
+            print(`<span class="line-dim">  from: ${escapeHtml(d.name)} &lt;${escapeHtml(d.email)}&gt;</span>`);
+            print(`<span class="line-dim">  subj: ${escapeHtml(d.subject)}</span>`);
+            print(`<span class="line-dim">  body: ${escapeHtml(d.message.substring(0, 60))}${d.message.length > 60 ? '...' : ''}</span>`);
+            print('<span class="line-dim">  (Wire to your backend/email service in production)</span>');
+            printBlank();
+            contactFlow = null;
+            document.getElementById('prompt-line').style.display = 'flex';
+            input.focus();
+            scrollBottom();
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Boot
+        boot();
+        input.focus();
+    </script>
+</body>
+
+</html>
